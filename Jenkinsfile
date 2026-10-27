@@ -56,6 +56,30 @@ pipeline {
             }
         }
 
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    set -e
+                    docker build -t devops-cicd-lab:${BUILD_NUMBER} .
+                    docker tag devops-cicd-lab:${BUILD_NUMBER} devops-cicd-lab:latest
+                '''
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh '''
+                    set -e
+                    trivy --config /dev/null image \
+                      --scanners vuln,secret \
+                      --format table \
+                      devops-cicd-lab:${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        
         stage('SonarQube Analysis') {
             steps {
                 script {
