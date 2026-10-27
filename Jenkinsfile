@@ -36,7 +36,6 @@ pipeline {
 
                     test -s coverage.xml
                     echo "Coverage report generated successfully."
-                    ls -lh coverage.xml
                 '''
             }
             post {
@@ -50,21 +49,14 @@ pipeline {
         stage('Trivy Filesystem Scan') {
             steps {
                 sh '''
-                    set +e
+                    set -e
                     trivy --config /dev/null fs \
                       --scanners vuln,misconfig,secret \
                       --format table \
                       --output trivy-report.txt \
                       .
-                    scan_status=$?
-                    set -e
 
                     cat trivy-report.txt
-
-                    if [ "$scan_status" -ne 0 ]; then
-                        echo "Trivy filesystem scanner failed."
-                        exit "$scan_status"
-                    fi
                 '''
             }
             post {
@@ -123,6 +115,38 @@ pipeline {
             }
         }
 
+        stage('Push Image to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker-cred',
+                        usernameVariable: 'DOCKERHUB_USERNAME',
+                        passwordVariable: 'DOCKERHUB_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        set -e
+
+                        echo "$DOCKERHUB_PASSWORD" | docker login \
+                          -u "$DOCKERHUB_USERNAME" --password-stdin
+
+                        docker tag devops-cicd-lab:${BUILD_NUMBER} \
+                          "$DOCKERHUB_USERNAME/devops-cicd-lab:${BUILD_NUMBER}"
+
+                        docker push \
+                          "$DOCKERHUB_USERNAME/devops-cicd-lab:${BUILD_NUMBER}"
+
+                        docker tag devops-cicd-lab:${BUILD_NUMBER} \
+                          "$DOCKERHUB_USERNAME/devops-cicd-lab:latest"
+
+                        docker push "$DOCKERHUB_USERNAME/devops-cicd-lab:latest"
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
         stage('Promote Image to Latest') {
             steps {
                 sh '''
@@ -130,13 +154,10 @@ pipeline {
                     docker tag devops-cicd-lab:${BUILD_NUMBER} \
                       devops-cicd-lab:latest
 
-                    echo "Verified build promoted to latest."
-                    docker image inspect \
-                      devops-cicd-lab:latest \
+                    docker image inspect devops-cicd-lab:latest \
                       --format 'Image ID: {{.Id}}'
                 '''
             }
         }
     }
 }
-
