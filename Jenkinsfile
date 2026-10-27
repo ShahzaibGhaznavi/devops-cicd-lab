@@ -23,7 +23,6 @@ pipeline {
             steps {
                 sh '''
                     set -e
-
                     python3 -m venv .venv
                     .venv/bin/python -m pip install \
                       --disable-pip-version-check pytest pytest-cov
@@ -55,7 +54,6 @@ pipeline {
                       --format table \
                       --output trivy-report.txt \
                       .
-
                     cat trivy-report.txt
                 '''
             }
@@ -134,7 +132,6 @@ pipeline {
                 ]) {
                     sh '''
                         set -e
-
                         echo "$DOCKERHUB_PASSWORD" | docker login \
                           -u "$DOCKERHUB_USERNAME" --password-stdin
 
@@ -148,7 +145,6 @@ pipeline {
                           "$DOCKERHUB_USERNAME/devops-cicd-lab:latest"
 
                         docker push "$DOCKERHUB_USERNAME/devops-cicd-lab:latest"
-
                         docker logout
                     '''
                 }
@@ -156,28 +152,33 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-    steps {
-        withCredentials([
-            file(credentialsId: 'kubeconfig-webapps', variable: 'KUBECONFIG')
-        ]) {
-            sh '''
-                set -e
+            steps {
+                withCredentials([
+                    file(credentialsId: 'kubeconfig-webapps',
+                         variable: 'KUBECONFIG')
+                ]) {
+                    sh '''
+                        set -eu
 
-                kubectl get nodes
+                        echo "Checking namespace-scoped Kubernetes access..."
+                        kubectl -n webapps get deployments
 
-                kubectl -n webapps create deployment devops-cicd-lab \
-                    --image=shahzaibazeem/devops-cicd-lab:${BUILD_NUMBER} \
-                    --dry-run=client -o yaml | kubectl apply -f -
+                        echo "Applying application deployment..."
+                        kubectl -n webapps create deployment devops-cicd-lab \
+                          --image=shahzaibazeem/devops-cicd-lab:${BUILD_NUMBER} \
+                          --dry-run=client -o yaml | kubectl apply -f -
 
-                kubectl -n webapps rollout status deployment/devops-cicd-lab \
-                    --timeout=180s
+                        echo "Waiting for rollout..."
+                        kubectl -n webapps rollout status \
+                          deployment/devops-cicd-lab --timeout=180s
 
-                kubectl -n webapps get deployments,pods,services
-            '''
+                        echo "Deployment verification:"
+                        kubectl -n webapps get deployments,pods,services
+                    '''
+                }
+            }
         }
-    }
-}
-        
+
         stage('Promote Image to Latest') {
             steps {
                 sh '''
@@ -224,4 +225,3 @@ Please check the Jenkins console output.
         }
     }
 }
-
