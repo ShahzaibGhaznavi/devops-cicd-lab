@@ -155,6 +155,29 @@ pipeline {
             }
         }
 
+        stage('Deploy to Kubernetes') {
+    steps {
+        withCredentials([
+            file(credentialsId: 'kubeconfig-webapps', variable: 'KUBECONFIG')
+        ]) {
+            sh '''
+                set -e
+
+                kubectl get nodes
+
+                kubectl -n webapps create deployment devops-cicd-lab \
+                    --image=shahzaibazeem/devops-cicd-lab:${BUILD_NUMBER} \
+                    --dry-run=client -o yaml | kubectl apply -f -
+
+                kubectl -n webapps rollout status deployment/devops-cicd-lab \
+                    --timeout=180s
+
+                kubectl -n webapps get deployments,pods,services
+            '''
+        }
+    }
+}
+        
         stage('Promote Image to Latest') {
             steps {
                 sh '''
