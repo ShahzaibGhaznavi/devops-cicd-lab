@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -18,12 +19,31 @@ pipeline {
             }
         }
 
-        stage('Unit Tests') {
+        stage('Unit Tests & Coverage') {
             steps {
                 sh '''
                     set -e
-                    python3 -m unittest -v
+
+                    python3 -m venv .venv
+                    .venv/bin/python -m pip install \
+                      --disable-pip-version-check pytest pytest-cov
+
+                    .venv/bin/python -m pytest \
+                      --cov=app \
+                      --cov-report=xml:coverage.xml \
+                      --cov-report=term \
+                      -v
+
+                    test -s coverage.xml
+                    echo "Coverage report generated successfully."
+                    ls -lh coverage.xml
                 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'coverage.xml',
+                                     allowEmptyArchive: true
+                }
             }
         }
 
@@ -90,9 +110,13 @@ pipeline {
                             '${scannerHome}/bin/sonar-scanner' \
                               -Dsonar.projectKey=devops-cicd-lab \
                               -Dsonar.projectName=devops-cicd-lab \
-                              -Dsonar.sources=. \
+                              -Dsonar.sources=app.py \
+                              -Dsonar.tests=test_app.py \
+                              -Dsonar.python.coverage.reportPaths=coverage.xml \
                               -Dsonar.python.version=3.12 \
-                              -Dsonar.scm.disabled=true
+                              -Dsonar.scm.disabled=true \
+                              -Dsonar.exclusions=.venv/**,**/__pycache__/**,.scannerwork/** \
+                              -Dsonar.coverage.exclusions=test_app.py
                         """
                     }
                 }
@@ -115,3 +139,4 @@ pipeline {
         }
     }
 }
+```
