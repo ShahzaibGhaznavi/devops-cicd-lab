@@ -1,4 +1,4 @@
-```python
+
 import unittest
 
 from app import calculate_total, main
@@ -37,4 +37,4 @@ class TestCalculateTotal(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-```
+
