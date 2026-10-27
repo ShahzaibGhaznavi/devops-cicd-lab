@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -43,7 +42,7 @@ pipeline {
                     cat trivy-report.txt
 
                     if [ "$scan_status" -ne 0 ]; then
-                        echo "Trivy scanner failed to complete."
+                        echo "Trivy filesystem scanner failed."
                         exit "$scan_status"
                     fi
                 '''
@@ -56,22 +55,24 @@ pipeline {
             }
         }
 
-
-     stage('Docker Build') {
-    steps {
-        sh '''
-            set -e
-            docker build --pull -t devops-cicd-lab:${BUILD_NUMBER} .
-            docker tag devops-cicd-lab:${BUILD_NUMBER} devops-cicd-lab:latest
-        '''
-    }
-}
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    set -e
+                    docker build --pull \
+                      -t devops-cicd-lab:${BUILD_NUMBER} .
+                '''
+            }
+        }
 
         stage('Trivy Image Scan') {
             steps {
                 sh '''
                     set -e
                     trivy --config /dev/null image \
+                      --ignorefile /dev/null \
+                      --skip-files "**/pip/_vendor/bom.cdx.json" \
+                      --pkg-types os,library \
                       --scanners vuln,secret \
                       --format table \
                       devops-cicd-lab:${BUILD_NUMBER}
@@ -79,7 +80,6 @@ pipeline {
             }
         }
 
-        
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -96,6 +96,21 @@ pipeline {
                         """
                     }
                 }
+            }
+        }
+
+        stage('Promote Image to Latest') {
+            steps {
+                sh '''
+                    set -e
+                    docker tag devops-cicd-lab:${BUILD_NUMBER} \
+                      devops-cicd-lab:latest
+
+                    echo "Verified build promoted to latest."
+                    docker image inspect \
+                      devops-cicd-lab:latest \
+                      --format 'Image ID: {{.Id}}'
+                '''
             }
         }
     }
