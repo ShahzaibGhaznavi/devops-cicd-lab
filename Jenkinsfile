@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -168,4 +168,37 @@ pipeline {
             }
         }
     }
+
+    post {
+        success {
+            emailext(
+                to: 'shahzaibazeem558@gmail.com',
+                subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Build successful!
+
+Job: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Status: ${currentBuild.currentResult}
+Build URL: ${env.BUILD_URL}
+"""
+            )
+        }
+
+        failure {
+            emailext(
+                to: 'shahzaibazeem558@gmail.com',
+                subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Build failed.
+
+Job: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Status: ${currentBuild.currentResult}
+Build URL: ${env.BUILD_URL}
+
+Please check the Jenkins console output.
+"""
+            )
+        }
+    }
 }
+```
