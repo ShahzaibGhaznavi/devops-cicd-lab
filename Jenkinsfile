@@ -57,15 +57,15 @@ pipeline {
         }
 
 
-        stage('Docker Build') {
-            steps {
-                sh '''
-                    set -e
-                    docker build -t devops-cicd-lab:${BUILD_NUMBER} .
-                    docker tag devops-cicd-lab:${BUILD_NUMBER} devops-cicd-lab:latest
-                '''
-            }
-        }
+     stage('Docker Build') {
+    steps {
+        sh '''
+            set -e
+            docker build --pull -t devops-cicd-lab:${BUILD_NUMBER} .
+            docker tag devops-cicd-lab:${BUILD_NUMBER} devops-cicd-lab:latest
+        '''
+    }
+}
 
         stage('Trivy Image Scan') {
             steps {
