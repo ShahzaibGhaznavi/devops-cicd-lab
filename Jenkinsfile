@@ -9,6 +9,25 @@ pipeline {
             }
         }
 
+        stage('Python Validation') {
+            steps {
+                sh '''
+                    set -e
+                    python3 --version
+                    python3 -m py_compile app.py test_app.py
+                '''
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh '''
+                    set -e
+                    python3 -m unittest -v
+                '''
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
