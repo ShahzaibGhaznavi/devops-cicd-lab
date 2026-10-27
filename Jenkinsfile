@@ -28,6 +28,34 @@ pipeline {
             }
         }
 
+        stage('Trivy Filesystem Scan') {
+            steps {
+                sh '''
+                    set +e
+                    trivy --config /dev/null fs \
+                      --scanners vuln,misconfig,secret \
+                      --format table \
+                      --output trivy-report.txt \
+                      .
+                    scan_status=$?
+                    set -e
+
+                    cat trivy-report.txt
+
+                    if [ "$scan_status" -ne 0 ]; then
+                        echo "Trivy scanner failed to complete."
+                        exit "$scan_status"
+                    fi
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-report.txt',
+                                     allowEmptyArchive: true
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -39,6 +67,7 @@ pipeline {
                               -Dsonar.projectKey=devops-cicd-lab \
                               -Dsonar.projectName=devops-cicd-lab \
                               -Dsonar.sources=. \
+                              -Dsonar.python.version=3.12 \
                               -Dsonar.scm.disabled=true
                         """
                     }
