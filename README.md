@@ -28,7 +28,11 @@ Set up the infrastructure and core DevOps tools required for the project.
 
 **Screenshots**
 
+### 1. EC2 Instances — Server Setup
+
 ![EC2 Instances 1](screenshots/ec2-instances-1.png)
+
+### 2. EC2 Instances — Second View
 
 ![EC2 Instances 2](screenshots/ec2-instances-2.png)
 ### Phase 2 — Git Repository Setup ✅
@@ -57,9 +61,15 @@ Implemented the CI/CD workflow to automate the application delivery process.
 
 **Screenshots**
 
+### 3. Jenkins Pipeline — Build Success
+
 ![Jenkins Pipeline Build Success Dashboard](screenshots/jenkins-pipeline-build-success.png)
 
+### 4. Nexus Repository — Artifact
+
 ![Nexus Artifact](screenshots/nexus-artifact.png)
+
+### 5. SonarQube — Code Analysis
 
 ![SonarQube Analysis](screenshots/sonarqube-analysis.png)
 ### Phase 4 — Monitoring ⏳
@@ -81,6 +91,8 @@ Planned components:
 - Node Exporter metrics
 - Blackbox Exporter probe results
 - Grafana monitoring dashboard
+
+### 6. Boardgame Application — Deployment
 
 ![Boardgame Application](screenshots/boardgame-app.png)
 
