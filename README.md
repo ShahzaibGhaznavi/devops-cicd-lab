@@ -28,16 +28,9 @@ Set up the infrastructure and core DevOps tools required for the project.
 
 **Screenshots**
 
-Add your verified screenshots in the `screenshots/` directory.
+![EC2 Instances 1](screenshots/ec2-instances-1.png)
 
-| Screenshot | File |
-|---|---|
-| Infrastructure/EC2 setup | `screenshots/phase-1-infrastructure.png` |
-| Kubernetes setup | `screenshots/phase-1-kubernetes.png` |
-| Jenkins dashboard | `screenshots/phase-1-jenkins.png` |
-| Nexus Repository | `screenshots/phase-1-nexus.png` |
-| SonarQube dashboard | `screenshots/phase-1-sonarqube.png` |
-
+![EC2 Instances 2](screenshots/ec2-instances-2.png)
 ### Phase 2 — Git Repository Setup ✅
 
 Configured source-code version control and repository integration.
@@ -64,12 +57,11 @@ Implemented the CI/CD workflow to automate the application delivery process.
 
 **Screenshots**
 
-![Jenkins Pipeline](screenshots/phase-3-jenkins-pipeline.png)
+![Jenkins Pipeline Build Success Dashboard](screenshots/jenkins-pipeline-build-success.png)
 
-![CI/CD Build Result](screenshots/phase-3-build-success.png)
+![Nexus Artifact](screenshots/nexus-artifact.png)
 
-![SonarQube Quality Gate](screenshots/phase-3-quality-gate.png)
-
+![SonarQube Analysis](screenshots/sonarqube-analysis.png)
 ### Phase 4 — Monitoring ⏳
 
 **Status: Pending**
@@ -89,6 +81,8 @@ Planned components:
 - Node Exporter metrics
 - Blackbox Exporter probe results
 - Grafana monitoring dashboard
+
+![Boardgame Application](screenshots/boardgame-app.png)
 
 ## Application Deployment
 
